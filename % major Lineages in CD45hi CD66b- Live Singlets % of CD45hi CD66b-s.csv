@@ -1,0 +1,51 @@
+Population,Biomass,Frequency
+B cells,Low,15.02527162
+B cells,Low,15.9825222
+B cells,Low,6.678205683
+B cells,Low,4.255785294
+B cells,Low,11.5770211
+B cells,High,15.50447518
+B cells,High,10.73308835
+B cells,High,9.190293529
+B cells,High,12.2062516
+B cells,High,22.61287413
+myeloid cells,Low,10.87197039
+myeloid cells,Low,21.91201818
+myeloid cells,Low,25.87083514
+myeloid cells,Low,39.31808846
+myeloid cells,Low,21.56658022
+myeloid cells,High,24.1273393
+myeloid cells,High,32.91718381
+myeloid cells,High,21.05903936
+myeloid cells,High,19.42801172
+myeloid cells,High,24.8055352
+NK/ILC,Low,4.743900983
+NK/ILC,Low,5.029257743
+NK/ILC,Low,9.434948796
+NK/ILC,Low,2.00191702
+NK/ILC,Low,4.124706701
+NK/ILC,High,6.019121237
+NK/ILC,High,3.34460912
+NK/ILC,High,16.23665777
+NK/ILC,High,15.39035596
+NK/ILC,High,6.081957049
+TCRab cells,Low,53.28053488
+TCRab cells,Low,44.55410761
+TCRab cells,Low,36.2000577
+TCRab cells,Low,16.78488292
+TCRab cells,Low,47.30052878
+TCRab cells,High,35.68246542
+TCRab cells,High,37.75684862
+TCRab cells,High,38.57488326
+TCRab cells,High,39.96221986
+TCRab cells,High,30.05326644
+TCRgd cells,Low,1.038723286
+TCRgd cells,Low,1.715941902
+TCRgd cells,Low,3.335496899
+TCRgd cells,Low,0.293030262
+TCRgd cells,Low,4.164000314
+TCRgd cells,High,2.949552482
+TCRgd cells,High,2.664005906
+TCRgd cells,High,2.30903936
+TCRgd cells,High,2.062360559
+TCRgd cells,High,0.463615354
