@@ -153,7 +153,7 @@ names(palette) = phyla.list
 ps.fix = subset_samples(ps, Day != "0")
 ps.fix = ps.fix %>% tax_fix()
 
-# Chao
+# Fig 1F Chao
 alpha_chao <- plot_richness(ps.fix, x = "Day", color = "Biomass", measures = c("Chao1")) + 
   labs(x = "Timepoint (day of chemostat culture)", y = "Chao1 index") +  stat_summary(fun = mean, geom = "line", aes(group = Biomass, color = Biomass, linetype = Biomass), linewidth = 1) +
   stat_summary(fun = mean, geom = "point", aes(group = Biomass, color = Biomass), size = 3) + 
@@ -180,15 +180,13 @@ tiff(eval(paste0("./",errPoolName,"_chao.tiff")), width = 1920, height = 1080)
 alpha_chao + quin.theme + quin.theme.text
 dev.off()
 
-tiff(eval(paste0("./",errPoolName,"_shannon.tiff")), width = 1920, height = 1080)
-alpha_shannon + quin.theme + quin.theme.text
-dev.off()
+
 
 
 # NMLE testing on alpha diversity
 require(nlme)
 
-df = estimate_richness(ps.fix, measures = c("Chao1", "Shannon"))
+df = estimate_richness(ps.fix, measures = "Chao1")
 df2 = sample_data(ps.fix)
 df3 = merge(df, df2, by = 'row.names')
 

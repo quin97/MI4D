@@ -14,12 +14,12 @@ chemo.counts$ID<-gsub("PREMI4D016","MI4D013",chemo.counts$ID)
 days<-unique(chemo.counts$Time)
 chemo.counts$`Date of chemostat run`
 
-chemo.counts%>%filter(Time > 0 &Time <=18 & `Date of chemostat run`!="03/2021")%>%
-  ggplot(.,aes(x = Time, y = Counts,color = ID,shape = Biomass, group =ID))+
-  geom_point(size =3)+
-  scale_color_manual(values =c(ghibli_palette("LaputaMedium")[7:4],ghibli_palette("KikiMedium")[4:7]))+
-  geom_line(size = 1,aes(linetype = Biomass))+labs(x = "Timepoint (day of chemostat culture)",y = "Bacteria counts per mL")+
-  scale_x_continuous(breaks = days[days<=14])
+# chemo.counts%>%filter(Time > 0 &Time <=18 & `Date of chemostat run`!="03/2021")%>%
+#   ggplot(.,aes(x = Time, y = Counts,color = ID,shape = Biomass, group =ID))+
+#   geom_point(size =3)+
+#   scale_color_manual(values =c(ghibli_palette("LaputaMedium")[7:4],ghibli_palette("KikiMedium")[4:7]))+
+#   geom_line(size = 1,aes(linetype = Biomass))+labs(x = "Timepoint (day of chemostat culture)",y = "Bacteria counts per mL")+
+#   scale_x_continuous(breaks = days[days<=14])
 
 
 counts.toplot<-chemo.counts%>%filter(Time > 0 &Time <=18 & `Date of chemostat run`!="03/2021")%>%
@@ -28,7 +28,7 @@ counts.toplot<-chemo.counts%>%filter(Time > 0 &Time <=18 & `Date of chemostat ru
             counts.sd=sd(Counts,na.rm = T))%>%
   mutate(upper = counts.mean + counts.sd,
          lower = counts.mean - counts.sd)
-
+# Fig 1G
 ggplot(counts.toplot, aes(x =as.factor(Time),y =counts.mean,linetype = Biomass,color = Biomass,group = Biomass))+
   geom_point(size = 3)+
   geom_errorbar(aes(ymin = lower , ymax = upper),alpha = .7,position = position_dodge(width = .2))+
@@ -43,5 +43,5 @@ fit<-chemo.counts%>%
   mutate(Time = factor(Time, levels = rev(unique(Time))))%>%
   lme(Counts~ Time+Biomass,random = ~ 1|ID,data=.)
 round(summary(fit)$tTable,2)
-write.csv(round(summary(fit)$tTable,2), "3_Fig2d_formal.csv",quote = F)
+write.csv(round(summary(fit)$tTable,2), "Fig1G_stats.csv",quote = F)
 

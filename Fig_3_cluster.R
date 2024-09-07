@@ -57,7 +57,7 @@ sample_data(mi4d.comp.core)<-meta%>%column_to_rownames("ID2")
 col_ha = columnAnnotation(Biomass = meta$biomass,Cluster = meta$cluster,
                           col = list(Cluster = c("cluster1"= "#F0D77B", "cluster2" = "#B4DAE5","cluster3"="#AE93BE"),
                                      Biomass = c("High" = "#2E9FDF", "Low" = "#E7B800")))
-# fig dim: 20 15
+# Supp 3A dim: 20 15
 mi4d.comp.core.rel%>%t()%>%# apply(.,2,function(x) x = x/sum(x))%>%
   Heatmap(name = "ASV abundance\n (clr-transformed)",
           cluster_columns=mi4d.sample.dend,cluster_rows = mi4d.asv.dend, 
@@ -68,7 +68,7 @@ mi4d.comp.core.rel%>%t()%>%# apply(.,2,function(x) x = x/sum(x))%>%
           col = rev(hcl.colors(10, "RdYlBu")))
 
 # clustering at Genus level
-# fig dim: 12 12
+# Fig 3A dim: 12 12
 mi4d.comp.core%>% tax_fix(unknowns = c("bacterium", "caccae", "finegoldii", "hominis", "intestinalis", "massiliensis", "sanguinis", "stercoris"))%>%
   tax_agg(.,rank = "Genus")%>%
   tax_transform("clr")%>%otu_table()%>%data.frame()%>%
@@ -84,8 +84,8 @@ mi4d.comp.core%>% tax_fix(unknowns = c("bacterium", "caccae", "finegoldii", "hom
 
 
 
-# plot on dbRDA 
-source("Fig1_2_Mb_formal.R")
+# Supp 3B dbRDA 
+source("Fig1_2_Mb_formal.R") # disregard warnings
 rda.axes$cluster<-meta$cluster
 rda.axes%>%ggplot(aes(x= CAP1, y = CAP2))+geom_point(aes(color = cluster,shape = biomass),size = 3.5)+
   stat_ellipse(aes(color = cluster),linetype = 2,type = "t", level = .95)+
@@ -93,7 +93,7 @@ rda.axes%>%ggplot(aes(x= CAP1, y = CAP2))+geom_point(aes(color = cluster,shape =
   labs(x = "dbRDA1(5.7%)",y = "dbRDA2(4.0%)")+scale_x_continuous(limits = c(-.4,.4))
 
 
-# plot composition in clusters
+# Supp 3C composition in clusters
 mi4d.comp.core.phy<-mi4d.comp.core%>%tax_fix()%>%tax_agg(.,rank = "Phylum")
 core.phy.abundance<-data.frame(otu_table(mi4d.comp.core.phy))
   
@@ -110,6 +110,7 @@ core.phy.abundance_long%>%
                       "SpiritedMedium",direction = -1)+
   labs(x = "cluster", y = "Relative abundance")
 
+# Fig 3C
 proteo_abund<-core.phy.abundance_long%>%filter(Phylum == "Proteobacteria")
 proteo_abund%>%ggplot(.,aes(x =cluster, y =read, color = cluster))+geom_boxplot(outlier.color = NA)+geom_point(aes(shape = Sex),size = 3,position = position_jitterdodge(.5))+
   labs(x = "Hierarchical Cluster", y ="Pseudomonadota(Proteobacteria)\n relative abundance")+scale_color_manual(values = ghibli_palette("LaputaMedium")[7:5], name = NULL)
@@ -129,6 +130,7 @@ summary(proteo_lm<-glm(read~Calprotectin_fecal*Sex+BMI+Age+Calprotectin_plasma, 
                        data = proteo_long%>%
                          filter(ASV =="Escherichia-Shigella"& read!=0)))
 
+# Fig 3D
 proteo_long%>%filter(ASV =="Escherichia-Shigella"& read!=0)%>%
   ggplot(.,aes(x = Calprotectin_fecal, y = read,color= Sex, fill = Sex))+
   geom_smooth(method = "glm", method.args = list(family = "Gamma"))+geom_point(size = 3.5)+
@@ -137,6 +139,7 @@ proteo_long%>%filter(ASV =="Escherichia-Shigella"& read!=0)%>%
   scale_color_manual(values = wes_palette("GrandBudapest2")[3:4])+
   scale_y_continuous(trans = "log",labels = function(x) format(round(x,2)))
 
+# Supp 3D
 proteo_mod2<-glm(read~Calprotectin_fecal*Sex, family = Gamma(link = "log"),
                  data = proteo_long%>%
                    filter(ASV =="Escherichia-Shigella"& read!=0))
@@ -146,7 +149,7 @@ proteo_long%>%filter(ASV =="Escherichia-Shigella"& read!=0)%>%
   geom_smooth(method = "lm")+geom_point(size = 3.5)+scale_y_continuous(limits = c(-2.5,6))+
   labs(x = "Plasma calprotectin (normalized)", y ="Escherichia-Shigella Genus read \n(Residuals from \nFecal Calprotectin & Sex)")
 
-
+# Supp 3E
 summary(lm(Calprotectin_fecal~Calprotectin_plasma+Age+Sex+BMI, data = meta))
 meta%>%
   ggplot(aes(x = Calprotectin_fecal, y=Calprotectin_plasma))+
@@ -160,12 +163,13 @@ meta%>%
 summary(mod1<-lm(HOMA.IR ~ BMI+Sex*cluster+Age,data = meta)) 
 summary(mod2<-lm(Triglycerides ~ BMI+Sex*cluster+Age,data = meta)) 
 
+# Fig 3E
 meta%>%
   ggplot(.,aes(x =cluster, y = HOMA.IR, color = cluster,shape = Sex))+geom_boxplot(outlier.color = NA)+geom_point(size = 3,position = position_jitterdodge(.5))+
   # scale_x_discrete(breaks = c("cluster1","cluster3","cluster2"))+
   labs(x = "hierarchical Cluster", y ="HOMA-IR (normalized)")+scale_color_manual(values = ghibli_palette("LaputaMedium")[7:5], name = NULL)
 
-
+# Fig 3F
 meta%>%
   ggplot(.,aes(x =cluster, y = Triglycerides, color = cluster,shape = Sex))+geom_boxplot(outlier.color = NA)+geom_point(size = 3,position = position_jitterdodge(.5))+
   labs(x = "hierarchical Cluster", y ="Triglycerides (normalized)")+scale_color_manual(values = ghibli_palette("LaputaMedium")[7:5], name = NULL)
@@ -179,7 +183,6 @@ summary(multi_mo)
 exp(coef(multi_mo))
 (z <- summary(multi_mo)$coefficients/summary(multi_mo)$standard.errors)
 (p <- (1 - pnorm(abs(z), 0, 1)) * 2)
-# new_data<-data.frame(counts_raw = seq(min(meta$counts_raw),max(meta$counts_raw),length.out = 100))
 new_data<-data.frame(counts = seq(min(meta$counts),max(meta$count),length.out = 100))
 pred<-cbind(counts = new_data,predict(multi_mo,new_data,type="probs"))%>%data.frame()
 pred%>%pivot_longer(cols = !counts, names_to = "cluster",values_to = "prob")%>%
@@ -198,10 +201,6 @@ meta2<-meta%>%mutate(cluster1 = ifelse(cluster == "cluster1", 1,0),
                      female = female+1)%>%
   select(-cluster)
 
-require(Hmisc)
-analytes<-meta2%>%dplyr::select(ELA2, Calprotectin_plasma, MPO, LBP, CD14)
-res <- rcorr(as.matrix(analytes))
-res2<-getCov(res)
 
 model1 <- '
 # efa block 
@@ -227,8 +226,9 @@ counts ~~ water_content+Calprotectin_fecal
 gut ~~ inflammation+counts*female
 '
 
-set.seed(42)
-fit1 <- sem(model = model1, data = meta2, rotation = "geomin")
+# set.seed(42)
+# fit1 <- sem(model = model1, data = meta2, rotation = "geomin")
+fit1 <-readRDS("20240901_SEM_fit1.rds")
 summary(fit1,fit.measures = TRUE)
 # saveRDS(fit1,"20240901_SEM_fit1.rds")
 

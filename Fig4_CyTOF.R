@@ -29,65 +29,56 @@ mi4d.md$cluster<-factor(paste0("cluster",c(1,3,3,2,2,2,3,3,1,3)))
 mi4d.cells<-mi4d.md%>%# filter(!ID =="MI4D042")%>%
   mutate(neutrophil = c(5.52, 3.1, 27.79, 4.32, 5.74, 2.2, 28.77, 49.5, 62.69, 29.33))
 
-compare.2.vectors(mi4d.cells[mi4d.cells$Biomass=="Low",]$neutrophil,mi4d.cells[mi4d.cells$Biomass=="High",]$neutrophil,tests = "nonparametric")
 ggplot(mi4d.cells,aes(x = Biomass,y =neutrophil,color = Biomass))+
   stat_summary(fun.data = mean_se, geom = "pointrange", fun.args = list(mult = 2),position = position_dodge(.7),size = .05)+
   stat_summary(fun.y = mean, geom = "crossbar",position = position_dodge(.7),linewidth = 1) + 
   geom_point(size = 3,position = position_jitterdodge(.5))+
   scale_color_manual(name = "Biomass\n group",values = c("#2E9FDF","#E7B800"))+labs(x = "",y = expression(atop(paste("% CD45"^"lo", "CD66b"^"+", "in"),"Live single cells")))
-# "% CD45lo CD66b+ in \nLive single cells"
 
 
 
-# ######## permutation test for var
-# group_var <- mi4d.cells %>% 
-#   group_by(Biomass) %>% 
-#   summarise(vars = var(neutrophil))
-# 
-# diff_var <- group_var %>%
-#   summarise(test_stat = diff(vars))
-# 
-# # Simulation st uo\p
-# set.seed(42)
-# repetitions <- 1000
-# simulated_values <- rep(NA, repetitions)
-# 
-# # Run our simulations
-# for(i in 1:repetitions){
-#   simdata <-  mi4d.cells %>% 
-#     mutate(Biomass = sample(Biomass))
-# 
-# 
-#   sim_value <- simdata %>% 
-#     group_by(Biomass) %>%
-#     summarise(vars= var(neutrophil)) %>%
-#     summarise(value = diff(vars))
-#   
-#   # Store your simulated statistics
-#   simulated_values[i] <- as.numeric(sim_value)
-# }
-# 
-# # Make into a tibble so it is easy to work with
-# sim <- tibble(var_diff = simulated_values)
-# 
-# # Plot our estimated sampling distribution
-# sim %>% ggplot(aes(x=var_diff)) + 
-#   geom_histogram(binwidth=1, color="black", fill="gray") +
-#   geom_vline(xintercept = abs(diff_var$test_stat), colour = "red") +
-#   geom_vline(xintercept = -abs(diff_var$test_stat), colour = "red")
-# 
-# 
-# # Calculate p-value
-# num_more_extreme <- sim %>% 
-#   filter(abs(var_diff) >= abs(diff_var$test_stat)) %>% 
-#   summarise(n())
-# 
-# p_value <- as.numeric(num_more_extreme / repetitions)
+######## permutation test for mean
+group_m<- mi4d.cells %>%
+  group_by(Biomass) %>%
+  summarise(ms = mean(neutrophil))
+
+diff_m <- group_m %>%
+  summarise(test_stat = diff(ms))
+
+# Simulation st uo\p
+set.seed(42)
+repetitions <- 1000
+simulated_values <- rep(NA, repetitions)
+
+# Run our simulations
+for(i in 1:repetitions){
+  simdata <-  mi4d.cells %>%
+    mutate(Biomass = sample(Biomass))
 
 
+  sim_value <- simdata %>%
+    group_by(Biomass) %>%
+    summarise(ms= mean(neutrophil)) %>%
+    summarise(value = diff(ms))
 
+  # Store simulated statistics
+  simulated_values[i] <- as.numeric(sim_value)
+}
+
+sim <- tibble(m_diff = simulated_values)
+
+
+# Calculate p-value
+num_more_extreme <- sim %>%
+  filter(abs(m_diff) >= abs(diff_m$test_stat)) %>%
+  summarise(n())
+
+p_value <- as.numeric(num_more_extreme / repetitions)
+
+
+setwd("work_dir")
 # 12 * 6.18
-cells2<-read_csv("./20221122_CyTOF_Experiement_prep/% major Lineages in CD45hi CD66b- Live Singlets % of CD45hi CD66b-s.csv")
+cells2<-read_csv("% major Lineages in CD45hi CD66b- Live Singlets % of CD45hi CD66b-s.csv")
 ggplot(cells2,aes(x = Population,y =Frequency,color = Biomass))+
   stat_summary(fun.data = mean_se, geom = "pointrange", fun.args = list(mult = 2),position = position_dodge(.7),size = .05)+
   stat_summary(fun.y = mean, geom = "crossbar",position = position_dodge(.7),linewidth = 1) + 
@@ -101,7 +92,7 @@ cells2stats<-cells2%>%split(.$Population)%>%map(~compare.2.vectors(.[.$Biomass==
   map_df(~.$nonparametric$p)
 
 
-cells3<-read_csv("./20221122_CyTOF_Experiement_prep/% T cell subsets in Total T cells % of T cells.csv")
+cells3<-read_csv("% T cell subsets in Total T cells % of T cells.csv")
 
 ggplot(cells3,aes(x = Population,y =Frequency,color = Biomass))+
   stat_summary(fun.data = mean_se, geom = "pointrange", position = position_dodge(1),fun.args = list(mult = 2),size = .05)+
@@ -114,7 +105,7 @@ ggplot(cells3,aes(x = Population,y =Frequency,color = Biomass))+
 cells3stats<-cells3%>%split(.$Population)%>%map(~compare.2.vectors(.[.$Biomass=="Low",]$Frequency,.[.$Biomass=="High",]$Frequency,tests = "nonparametric"))%>%
   map_df(~.$nonparametric$p)
 
-cells4<-read_csv("./20221122_CyTOF_Experiement_prep/% IgDIgM subsets in B cells % of B cells.csv")
+cells4<-read_csv("% IgDIgM subsets in B cells % of B cells.csv")
 
 ggplot(cells4,aes(x = Population,y =Frequency,color = Biomass))+
   stat_summary(fun.data = mean_se, geom = "pointrange", position = position_dodge(1),fun.args = list(mult = 2),size = .05)+
@@ -127,7 +118,7 @@ ggplot(cells4,aes(x = Population,y =Frequency,color = Biomass))+
 cells4stats<-cells4%>%split(.$Population)%>%map(~compare.2.vectors(.[.$Biomass=="Low",]$Frequency,.[.$Biomass=="High",]$Frequency,tests = "nonparametric"))%>%
   map_df(~.$nonparametric$p)
 
-cells5<-read_csv("./20221122_CyTOF_Experiement_prep/% INKILC Mono DC in non-TB cells % of non-TB cells.csv")
+cells5<-read_csv("% INKILC Mono DC in non-TB cells % of non-TB cells.csv")
 
 ggplot(cells5,aes(x = Population,y =Frequency,color = Biomass))+
   stat_summary(fun.data = mean_se, geom = "pointrange", position = position_dodge(1),fun.args = list(mult = 2),size = .05)+
@@ -142,7 +133,7 @@ ggplot(cells5,aes(x = Population,y =Frequency,color = Biomass))+
 cells5stats<-cells5%>%split(.$Population)%>%map(~compare.2.vectors(.[.$Biomass=="Low",]$Frequency,.[.$Biomass=="High",]$Frequency,tests = "nonparametric"))%>%
   map_df(~.$nonparametric$p)
 
-cells6<-read_csv("./20221122_CyTOF_Experiement_prep/Paper Figure Markers on CD66b+ CD45lo  cells vs CD14+ monocytes Medians.csv")
+cells6<-read_csv("Paper Figure Markers on CD66b+ CD45lo  cells vs CD14+ monocytes Medians.csv")
 
 cells6$Marker<-unlist(lapply(str_split(cells6$Marker,"-"),"[",1))
 

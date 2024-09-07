@@ -133,17 +133,6 @@ mi4d_scaled%>%
   labs(x = "Plasma myeloperoxidase (normalized)", y = "Triglycerides (normalized)")
 
 
-# Calprotectin fecal ------------------------------------------------------
-summary(cal<-lm(Calprotectin_plasma~Calprotectin_fecal+Sex+Age+BMI,mi4d_scaled))
-toprint<-round(summary(cal)$coefficients,3)%>%matrix(ncol = 4)
-
-mi4d_scaled%>%
-  ggplot(aes(x = Calprotectin_fecal, y=Calprotectin_plasma,color = Sex,fill = Sex))+
-  geom_point(size = 3)+
-  scale_color_manual(values = c("lightcoral","lightslateblue"))+
-  scale_fill_manual(values = c("lightcoral","lightslateblue"))+
-  labs(y = "Plasma calprotectin (normalized)", x = "Fecal calprotectin (normalized)")
-
 # CD14 ------------------------------------------------------
 
 summary(cd14.lbp<-lm(CD14~LBP+Age+Sex+BMI,mi4d_scaled)) 

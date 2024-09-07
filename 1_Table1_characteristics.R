@@ -61,7 +61,6 @@ meta.selected<-mi4d_met%>%
             med.hb = median(HbA1c,na.rm = T),
             min.hb = min(HbA1c,na.rm = T),
             max.hb= max(HbA1c,na.rm = T),
-            # TABLE 2
             n.crp = sum(!is.na(CRPhs)),
             med.crp = median(CRPhs,na.rm = T),
             min.crp = min(CRPhs,na.rm = T),
@@ -86,7 +85,7 @@ meta.selected<-mi4d_met%>%
 
 
 wc.test<-mi4d_met%>%
-  select(ID, Sex,Age,Weight_kg, BMI, `Waist Circumference_cm`,Fasting.insulin, Fasting.insulin,IGI,HOMA.IR,WBISI,HbA1c,
+  select(ID, Sex,Age,Weight_kg, BMI, `Waist Circumference_cm`,Fasting.glucose, Fasting.insulin,IGI,HOMA.IR,WBISI,HbA1c,
          CRPhs,Cholesterol, Triglycerides,LDL,HDL)%>%
   pivot_longer(cols = !c(ID,Sex))%>%
   split(.$name)%>%
@@ -94,3 +93,4 @@ wc.test<-mi4d_met%>%
   map_dbl(~.$p.value)
 
 mi4d_met%>%select(ID, Sex,Tanner=Self_Assessed_Tanner_Stage)%>%column_to_rownames("ID")%>%transmute(Tanner.cat = ifelse(Tanner > 3, "Mature","Immature"),Sex = Sex)%>%table()%>%fisher.test()
+

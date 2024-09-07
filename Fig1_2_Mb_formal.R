@@ -7,6 +7,7 @@ library(caret)
 library(ghibli)
 library(wesanderson)
 library(vegan)
+library(afex)
 theme_set(
   theme_classic(base_size = 25)
 )
@@ -25,7 +26,7 @@ ps.mi4d.asv%<>%
     ID2 = if_else(grepl("PRE",ID),paste0("MI4D0",as.numeric(str_extract(ID,"\\d{3}?"))+52),ID)
   )
 
-# histogram of mean relative abundance
+# Supp 2A histogram of mean relative abundance
 mean.abund<-ps.mi4d.asv%>%transform_sample_counts(., function(x) x / sum(x)*100)%>% # normalize total read of each individual to 1
   otu_table()%>%data.frame()
 mean.ra<-mean.abund%>%reframe(ASV = rownames(mean.abund),mean.ra =rowMeans(.))%>%mutate(mean.ra.log10 = log10(mean.ra))
@@ -34,7 +35,7 @@ ggplot(mean.ra,aes(x = mean.ra.log10))+geom_histogram(fill = "slateblue",bins = 
   geom_vline(xintercept = quantile(mean.ra$mean.ra.log10,c(0.25,.5,.75)),linetype = "dashed")+
   labs(x = "Mean relative abundance in samples\n(log10-transformed)", y = "Number of ASVs")
 
-# rare fraction curve 15*6.18
+# Supp 2B rare fraction curve 15*6.18
 source("Fig_1_rarefaction_fun.r")
 rareplot <- ggrare(ps.mi4d.asv, step = 100, label = "Sample", color = "ID2", 
                    plot = FALSE, title = "MI4D Rarefaction Curve", parallel = TRUE, se = FALSE) 
@@ -71,7 +72,7 @@ abs.otu<-sample_data(ps.mi4d.asv2)[rownames(comp.otu),]$counts*comp.otu
 rownames(abs.otu)<-rownames(comp.otu)
 ps.mi4d.asv.abs<-ps.mi4d.asv2
 otu_table(ps.mi4d.asv.abs)<-otu_table(abs.otu,taxa_are_rows = F)
-# Fig dim inches: 15, 7
+# Fig 1A,B dim inches: 15, 7
 ps.mi4d.asv.abs%>%
   tax_fix()%>%
   comp_barplot(
@@ -93,7 +94,7 @@ adiv_scaled<-predict(adiv_ppc,adiv2)
 
 
 # histograms for bacteria counts and water content
-# Fig dim inches: 10, 6.18
+# Fig 1C dim inches: 10, 6.18
 p<-adiv2%>%mutate(log_biomass = log10(counts))%>%
   ggplot(aes(x = log_biomass))+geom_density()
 pg <- ggplot_build(p)
@@ -106,20 +107,26 @@ fit_shannon<-summary(lm(Shannon~counts+Sex+Age+BMI,data = adiv_scaled))
 fit_chao1<-summary(lm(Chao1~counts+Sex+Age+BMI,data = adiv_scaled))
 fit_cal_fecal<-summary(lm(water_content~Calprotectin_fecal+counts+Sex+Age+BMI,data = adiv_scaled))
 
-# Fig dim inches: 9.2, 5.8
+# Supp 1B dim inches: 9.2, 5.8
 adiv_scaled%>%ggplot(.,aes(x=counts,y=Shannon))+
   geom_point(aes(color=Sex),size =3)+
   geom_smooth(method = "lm")+
   scale_color_manual(values = c("lightcoral","lightslateblue"))+
   labs(x = "Bacterial counts in dry stool (normalized)", y = "Shannon index (normalized)") 
-# Fig dim inches: 8.5, 5.1
+# Fig 1D dim inches: 8.5, 5.1
 ggplot(adiv_scaled%>%filter(!is.na(Sex)),aes(x=counts,y=Chao1))+
   geom_point(size =3,aes(color=Sex))+
   geom_smooth(method = "lm")+
   scale_color_manual(values = c("lightcoral","lightslateblue"))+
   labs(x = "Bacterial counts in dry stool (normalized)", y = "Chao1 index (normalized)") 
+# Supp 1A dim inches: 9.2, 5.8
+adiv_scaled%>%ggplot(.,aes(x=counts,y=water_content))+
+  geom_point(aes(color=Sex),size =3)+
+  geom_smooth(method = "lm")+
+  scale_color_manual(values = c("lightcoral","lightslateblue"))+
+  labs(x = "Bacterial counts in dry stool (normalized)", y = "Stool water content (normalized)")
 
-
+# Fig 1E
 adiv_scaled2<-apply(otu_table(ps.mi4d.asv2),1,function(x) sum(x>0))%>%data.frame(asvcount = .)%>%merge(adiv_scaled, by = "row.names")
 fit_asvcount<-summary(lm(asvcount~counts+Sex+Age+BMI,data = adiv_scaled2)) # p: counts = 8.13e-05, SexM = 0.059,Age = 0.048 
 ggplot(adiv_scaled2,aes(x=counts,y=asvcount))+geom_point(aes(color = Sex),size = 3)+
@@ -167,25 +174,25 @@ bray_dists_ord<-perm2 %>%
 # add species score to ordination object
 vegan::sppscores(bray_dists_ord@ord)<-ps.mi4d2%>%otu_table()
 mi4d.mds.score<-data.frame(bray_dists_ord@ord$CCA$biplot)
-
+# Fig 2A
 rda.axes<-data.frame(bray_dists_ord@ord$CCA$u)%>%
   merge(adiv_scaled,by="row.names")
 rda.axes%>%ggplot(aes(x= CAP1, y = CAP2))+geom_point(aes(color = biomass),size = 3.5)+
   stat_ellipse(aes(color = biomass),linetype = 2,type = "t", level = .95)+
   scale_color_manual(values = c("#2E9FDF","#E7B800"),name = "Biomass")+
   labs(x = "dbRDA1(5.7%)",y = "dbRDA2(4.0%)")+scale_x_continuous(limits = c(-.4,.4))
-# Fig  6.18*6.18
+# Fig 2B 6.18*6.18
 rda.axes%>%ggplot(aes(x= biomass, y = CAP1,color = biomass))+
   geom_boxplot(outlier.colour = NA)+
   geom_point(position = position_jitter(),size = 3.5, alpha = .75)+
   scale_color_manual(values = c("#2E9FDF","#E7B800"),name = "Biomass")+
   labs(y = "dbRDA1(5.7%)",x = "")
-
+# Fig 2C
 rda.axes%>%ggplot(aes(x= CAP1, y = CAP2))+geom_point(aes(color = Sex),size = 3.5)+
   stat_ellipse(aes(color = Sex),linetype = 2,type = "t")+
   scale_color_manual(values = c("lightcoral","lightslateblue"))+
   labs(x = "dbRDA1(5.7%)",y = "dbRDA2(4.0%)")+scale_x_continuous(limits = c(-.4,.4))
-# Fig  6.18*6.18
+# Fig 2D  6.18*6.18
 rda.axes%>%ggplot(aes(x= Sex, y = CAP2,color = Sex))+
   geom_boxplot(outlier.colour = NA)+
   geom_point(position = position_jitter(),size = 3.5, alpha = .75)+
@@ -212,14 +219,13 @@ top20.dbrda1.asv<-top20.dbrda1%>%tax_transform("clr")%>%otu_table()
 # colnames(top20.dbrda1.asv)<-species_name
 
 top20.dbrda1.tax["ASV_0063",]$Species<-"Eubacterium\n coprostanoligenes Genus"
-adiv_scaled2%<>%column_to_rownames("Row.names")%>%rownames(top20.dbrda1.asv)
+adiv_scaled2%<>%column_to_rownames("Row.names")
 
 top20.dbrda1.test<-cbind(top20.dbrda1.asv,adiv_scaled2[,c("biomass","Sex")])
 top20.dbrda1.scaled.test_result<- top20.dbrda1.test%>%
   gather(key = ASV, value = abund, -biomass,-Sex) %>%
   split(.$ASV)%>%
-  map(~compare.2.vectors(.[.$biomass=="Low",]$abund,.[.$biomass=="High",]$abund,tests = "nonparametric"))%>%
-  walk(print)
+  map(~compare.2.vectors(.[.$biomass=="Low",]$abund,.[.$biomass=="High",]$abund,tests = "nonparametric"))
 
 top20.dbrda1.scaled.test_result_nonpara<-top20.dbrda1.scaled.test_result%>%map_df(~.$nonparametric$p)
 top20.dbrda1.scaled.test_result_nonpara<-top20.dbrda1.scaled.test_result_nonpara%>%t()%>%data.frame()%>%
@@ -231,7 +237,7 @@ top20.dbrda1.scaled.test_result_nonpara%<>%mutate(symbol = case_when(p.adj < .05
 top20.dbrda1.test.long<-top20.dbrda1.test%>%pivot_longer(cols = !c(biomass,Sex), names_to = "ASV", values_to = "ASV_read")%>%
   left_join(top20.dbrda1.scaled.test_result_nonpara)
 
-# 12 * 12
+# Supp 2C 12 * 12
 top20.dbrda1.test.long%>%ggplot(aes(x= ASV_read, y = ASV,color =biomass))+
   geom_boxplot(outlier.shape = NA)+geom_point(position=position_jitterdodge())+
   scale_y_discrete(limits = rownames(top20.dbrda1.tax),labels =  top20.dbrda1.tax$Species)+
@@ -239,6 +245,7 @@ top20.dbrda1.test.long%>%ggplot(aes(x= ASV_read, y = ASV,color =biomass))+
   geom_text(data = top20.dbrda1.test.long%>%group_by(ASV)%>%slice_max(order_by = ASV_read), size = 5,
             x = 7,color = "black",aes(label = symbol))+labs(y = "",x="ASV reletive abundance\n(center-log transformed)")
 
+# Fig 2E
 top20.dbrda1.test.long.sign<-top20.dbrda1.test.long%>%filter(!is.na(symbol))
 top20.dbrda1.tax.sign<-top20.dbrda1.tax[unique(top20.dbrda1.test.long.sign$ASV),]
 top20.dbrda1.test.long.sign%>%ggplot(aes(y= ASV_read, x = ASV,color =biomass))+
@@ -271,8 +278,7 @@ top20.dbrda2.test<-cbind(top20.dbrda2.asv,adiv_scaled2[,c("biomass","Sex")])
 top20.dbrda2.scaled.test_result<- top20.dbrda2.test%>%
   gather(key = ASV, value = abund, -biomass,-Sex) %>%
   split(.$ASV)%>%
-  map(~compare.2.vectors(.[.$Sex == "F",]$abund,.[.$Sex == "M",]$abund))%>%
-  walk(print)
+  map(~compare.2.vectors(.[.$Sex == "F",]$abund,.[.$Sex == "M",]$abund))
 
 top20.dbrda2.scaled.test_result_nonpara<-top20.dbrda2.scaled.test_result%>%map_df(~.$nonparametric$p)
 top20.dbrda2.scaled.test_result_nonpara<-top20.dbrda2.scaled.test_result_nonpara%>%t()%>%data.frame()%>%
@@ -287,7 +293,7 @@ top20.dbrda2.scaled.test_result_nonpara<-top20.dbrda2.scaled.test_result_nonpara
 
 top20.dbrda2.test.long<-top20.dbrda2.test%>%pivot_longer(cols = !c(biomass,Sex), names_to = "ASV", values_to = "ASV_read")%>%
   left_join(top20.dbrda2.scaled.test_result_nonpara)
-# 12*12
+# Supp 2D 12*12
 top20.dbrda2.test.long%>%ggplot(aes(x= ASV_read, y = ASV,color =Sex))+
   geom_boxplot(outlier.shape = NA)+geom_point(position=position_jitterdodge())+
   scale_y_discrete(limits = rownames(top20.dbrda2.tax),labels =  top20.dbrda2.tax$Species)+
