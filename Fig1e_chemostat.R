@@ -149,13 +149,13 @@ phyla.list =  unique(tax_table(phyla.list)[,grep("Phylum", colnames(tax_table(ph
 names(palette) = phyla.list
 
 
-# Alpha diversity as requested --------------------------------------------
+# Alpha diversity --------------------------------------------
 ps.fix = subset_samples(ps, Day != "0")
 ps.fix = ps.fix %>% tax_fix()
 
-# Fig 1F Chao
+# Fig 1F 12.5*6.18
 alpha_chao <- plot_richness(ps.fix, x = "Day", color = "Biomass", measures = c("Chao1")) + 
-  labs(x = "Timepoint (day of chemostat culture)", y = "Chao1 index") +  stat_summary(fun = mean, geom = "line", aes(group = Biomass, color = Biomass, linetype = Biomass), linewidth = 1) +
+  labs(x = "Timepoint (day of bioreactor culture)", y = "Chao1 index") +  stat_summary(fun = mean, geom = "line", aes(group = Biomass, color = Biomass, linetype = Biomass), linewidth = 1) +
   stat_summary(fun = mean, geom = "point", aes(group = Biomass, color = Biomass), size = 3) + 
  stat_summary(fun.data = mean_se, geom = "errorbar", aes(group = Biomass, linetype = Biomass), alpha = 0.7, position = position_dodge(width = .2)) + 
   scale_color_manual(values =  c("#2E9FDF", "#E7B800"))

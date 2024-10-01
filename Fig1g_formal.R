@@ -28,12 +28,12 @@ counts.toplot<-chemo.counts%>%filter(Time > 0 &Time <=18 & `Date of chemostat ru
             counts.sd=sd(Counts,na.rm = T))%>%
   mutate(upper = counts.mean + counts.sd,
          lower = counts.mean - counts.sd)
-# Fig 1G
+# Fig 1G 12*6.18
 ggplot(counts.toplot, aes(x =as.factor(Time),y =counts.mean,linetype = Biomass,color = Biomass,group = Biomass))+
   geom_point(size = 3)+
   geom_errorbar(aes(ymin = lower , ymax = upper),alpha = .7,position = position_dodge(width = .2))+
   geom_line(size =1)+
-  labs(y="Bacterial counts/mL",x="Timepoint (day of chemostat culture)",title = "")+
+  labs(y="Bacterial counts/mL",x="Timepoint (day of bioreactor culture)",title = "")+
   scale_color_manual(values =c("#2E9FDF","#E7B800"))
 
 
