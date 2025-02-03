@@ -33,47 +33,11 @@ ggplot(mi4d.cells,aes(x = Biomass,y =neutrophil,color = Biomass))+
   stat_summary(fun.data = mean_se, geom = "pointrange", fun.args = list(mult = 2),position = position_dodge(.7),size = .05)+
   stat_summary(fun.y = mean, geom = "crossbar",position = position_dodge(.7),linewidth = 1) + 
   geom_point(size = 3,position = position_jitterdodge(.5))+
-  scale_color_manual(name = "Biomass\n group",values = c("#2E9FDF","#E7B800"))+labs(x = "",y = expression(atop(paste("% CD45"^"lo", "CD66b"^"+", "in"),"Live single cells")))
+  scale_color_manual(name = "Biomass\n group",values = c("#2E9FDF","#E7B800"))+
+  labs(x = "",y = expression(atop(paste("% CD45"^"lo", "CD66b"^"+", "in"),"Live single cells")))
 
+compare.2.vectors(mi4d.cells[mi4d.cells$Biomass=="Low",]$neutrophil,mi4d.cells[mi4d.cells$Biomass=="High",]$neutrophil,tests = "nonparametric")$nonparametric$p[2]
 
-
-######## permutation test for mean
-group_m<- mi4d.cells %>%
-  group_by(Biomass) %>%
-  summarise(ms = mean(neutrophil))
-
-diff_m <- group_m %>%
-  summarise(test_stat = diff(ms))
-
-# Simulation st uo\p
-set.seed(42)
-repetitions <- 1000
-simulated_values <- rep(NA, repetitions)
-
-# Run our simulations
-for(i in 1:repetitions){
-  simdata <-  mi4d.cells %>%
-    mutate(Biomass = sample(Biomass))
-
-
-  sim_value <- simdata %>%
-    group_by(Biomass) %>%
-    summarise(ms= mean(neutrophil)) %>%
-    summarise(value = diff(ms))
-
-  # Store simulated statistics
-  simulated_values[i] <- as.numeric(sim_value)
-}
-
-sim <- tibble(m_diff = simulated_values)
-
-
-# Calculate p-value
-num_more_extreme <- sim %>%
-  filter(abs(m_diff) >= abs(diff_m$test_stat)) %>%
-  summarise(n())
-
-p_value <- as.numeric(num_more_extreme / repetitions)
 
 
 setwd("work_dir")
