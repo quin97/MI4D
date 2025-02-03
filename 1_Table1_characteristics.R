@@ -94,3 +94,9 @@ wc.test<-mi4d_met%>%
 
 mi4d_met%>%select(ID, Sex,Tanner=Self_Assessed_Tanner_Stage)%>%column_to_rownames("ID")%>%transmute(Tanner.cat = ifelse(Tanner > 3, "Mature","Immature"),Sex = Sex)%>%table()%>%fisher.test()
 
+# check relationship between tanner stage and age
+mi4d_met%>%select(ID, Sex,Tanner=Self_Assessed_Tanner_Stage, Age)%>%filter(!is.na(Tanner))%>%
+  ggplot(aes(x = factor(Tanner), y = Age, color = Tanner))+
+  geom_boxplot()+geom_point(position = position_jitterdodge())+
+  facet_wrap(~Sex)+labs(x = "Self-reported Tanner Stage")
+
